@@ -1,102 +1,127 @@
-# Task Manager — Cognifyz Tasks 3 & 5
+Task Manager – CRUD with JSON Persistence
+A fully-featured Python Task Manager that demonstrates clean CRUD design, JSON-based persistence, and a small but complete test suite.
 
-A fully-featured **console-based Task Manager** implemented in Python, combining:
-- **Task 3**: CRUD operations (Create, Read, Update, Delete) using a `Task` class and list-based storage
-- **Task 5**: File I/O persistence using JSON, with error handling and TXT export
+This project was built as part of Cognifyz Tasks 3 & 5, combining console CRUD operations with robust file I/O and error handling.
 
----
+Features
+Full CRUD: Create, read, update, and delete tasks from an interactive console menu.
 
-## Features
+JSON persistence: All changes are auto-saved to tasks.json after every operation.
 
-| Feature | Details |
-|---------|---------|
-| **CRUD** | Create, Read, Update, Delete tasks via interactive console menu |
-| **File Persistence** | Auto-saves to `tasks.json` after every change |
-| **Error Handling** | Handles missing files, corrupted JSON (auto-backup), permission errors |
-| **Filtering** | Filter tasks by Status or Priority |
-| **Search** | Keyword search across title and description |
-| **Statistics** | Visual bar chart of tasks by status and priority |
-| **TXT Export** | Export all tasks to a human-readable `.txt` file |
-| **Test Suite** | 40+ unit & integration tests covering all requirements |
+Resilient file I/O: Handles missing files, corrupted JSON (with .bak backup), and permission issues gracefully.
 
----
+Filtering and search: Filter by status or priority, or search by keywords in title/description.
 
-## Project Structure
+Statistics view: Get counts of tasks by status and priority, suitable for a simple bar-chart style summary.
 
-```
-task_manager/
-├── task_manager.py        # Main application (Task, FileStorage, TaskManager, UI)
-├── test_task_manager.py   # Comprehensive test suite
-├── tasks.json             # Auto-created data file (after first run)
-└── README.md              # This file
-```
+TXT export: Export tasks to a human-readable .txt file for sharing or backup.
 
----
+Test suite: 40+ unit and integration tests covering Task, FileStorage, and TaskManager behavior.
 
-## How to Run
+Tech Stack
+Language: Python 3.x
 
-### Start the App
-```bash
+Data format: JSON (tasks.json) for persistence
+
+Testing: pytest or plain python test_task_manager.py
+
+Project Structure
+text
+.
+├── streamlit_app.py        # (Optional) Streamlit UI wrapper (if used)
+├── task_manager.py         # Core logic: Task, FileStorage, TaskManager, CLI
+├── test_task_manager.py    # Test suite
+├── tasks.json              # Auto-created data file on first save
+└── README.md               # Project documentation
+Core Components
+Task
+Represents a single task with metadata and validation.
+
+id: Auto-generated 8-character uppercase UUID.
+
+title, description: Basic task details.
+
+priority: One of Low / Medium / High / Critical.
+
+status: One of Pending / In Progress / Completed / Cancelled.
+
+Timestamps: due_date, created_at, updated_at.
+
+Serialization helpers: to_dict() and from_dict().
+
+FileStorage
+Encapsulates all file I/O.
+
+save(tasks): Writes JSON to disk with metadata.
+
+load(): Reads and parses JSON, handling missing or corrupted files.
+
+export_txt(tasks, filename): Exports tasks to a readable .txt file.
+
+On corrupted JSON, creates a .bak backup and starts from an empty list.
+
+TaskManager
+Coordinates all higher-level operations.
+
+create_task(...): Validates input, creates a task, and auto-saves.
+
+read_all(filter_status=None, filter_priority=None): Lists tasks with optional filters.
+
+read_by_id(task_id): Looks up a task by its ID.
+
+update_task(task_id, **kwargs): Partially updates a task and saves.
+
+delete_task(task_id) / delete_all(): Deletes one or all tasks.
+
+search(query): Keyword search over title and description.
+
+stats(): Returns aggregated counts by status and priority.
+
+Error Handling
+This project is designed to fail safe rather than crash.
+
+File not found: Returns an empty list, creates tasks.json on first save.
+
+Corrupted JSON: Backs up the corrupted file as .bak and starts fresh.
+
+Permission denied: Logs a clear error and returns False instead of crashing.
+
+Empty title: Raises ValueError with a descriptive message.
+
+Invalid priority/status: Falls back to default "Medium" / "Pending".
+
+Unknown task ID: Returns None or False for lookups/operations.
+
+Getting Started
+Prerequisites
+Python 3.8+ installed.
+
+Recommended: virtual environment (venv) for isolation.
+
+Clone the repository
+bash
+git clone https://github.com/KRAZATEC/CRUD.git
+cd CRUD
+Run the console app
+bash
 python task_manager.py
-```
+This will start the interactive menu and create tasks.json automatically on first save.
 
-### Run Tests
-```bash
+Running Tests
+You can run the tests either via pytest or directly with Python.
+
+bash
+# Using pytest
 python -m pytest test_task_manager.py -v
-# or
+
+# Or directly
 python test_task_manager.py
-```
+Possible Extensions
+Add a richer Streamlit UI using streamlit_app.py.
 
----
+Add export to CSV for usage in spreadsheets or BI tools.
 
-## Architecture
+Integrate with a database (SQLite/PostgreSQL) instead of JSON for multi-user scenarios.
 
-### `Task` (Task 3 — Step 1)
-Represents a single task with:
-- `id` — auto-generated 8-char uppercase UUID
-- `title`, `description`
-- `priority` — Low / Medium / High / Critical
-- `status` — Pending / In Progress / Completed / Cancelled
-- `due_date`, `created_at`, `updated_at`
-- `to_dict()` / `from_dict()` for serialization
-
-### `FileStorage` (Task 5)
-Handles all file I/O:
-- `save(tasks)` — writes JSON with metadata
-- `load()` — reads JSON, handles missing/corrupted files
-- `export_txt(tasks, filename)` — human-readable export
-- Auto-backup of corrupted files as `.bak`
-
-### `TaskManager` (Task 3 — Steps 2–6)
-Orchestrates CRUD:
-- `create_task()` — validates and creates, auto-saves
-- `read_all(filter_status, filter_priority)` — list with optional filters
-- `read_by_id(id)` — lookup by ID
-- `update_task(id, **kwargs)` — partial update, auto-saves
-- `delete_task(id)` / `delete_all()` — removal, auto-saves
-- `search(query)` — searches title + description
-- `stats()` — count by status and priority
-
----
-
-## Test Coverage
-
-| Test Class | Covers |
-|------------|--------|
-| `TestTask` | Task attributes, validation, serialization |
-| `TestFileStorage` | Save/load roundtrip, corruption handling, export |
-| `TestTaskManagerCRUD` | All CRUD operations + persistence after each |
-| `TestPersistenceScenarios` | Multi-session lifecycle, special characters, large datasets |
-
----
-
-## Error Handling (Task 5 — Step 2)
-
-| Scenario | Behavior |
-|----------|----------|
-| File not found | Returns empty list, creates new file on first save |
-| Corrupted JSON | Returns empty list, backs up file as `.bak` |
-| Permission denied | Prints error, returns False without crashing |
-| Empty title | Raises `ValueError` with clear message |
-| Invalid priority/status | Silently defaults to "Medium"/"Pending" |
-| Non-existent task ID | Returns `None` or `False`, no crash |
+License
+Add your preferred license here (e.g., MIT), and include a LICENSE file in the repository.
